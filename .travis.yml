@@ -10,15 +10,14 @@ before_install:
 script:
   - docker run -e CI=true rahulshetty/learn-docker npm run test
 
-deploy
-  provider: elasticbeanstalk  # whereever you are deploying your app
-  region: "eu-west-1"  # region where you created the elastic bean server. You can get it from the domain name as well
-  app: "learn-docker"  # name of the app you specified while creating the server
+deploy:
+  provider: elasticbeanstalk # whereever you are deploying your app
+  region: "eu-west-1" # region where you created the elastic bean server. You can get it from the domain name as well
+  app: "learn-docker" # name of the app you specified while creating the server
   env: "LearnDocker-env" # name elastic bean environment. Can be found on the detail page of the running elastic bean instance
   bucket_name: "elasticbeanstalk-eu-west-1-163766282102" # Navigate to s3 bucket by clicking services and then searching s3 from the top bar in AWS
-  bucket_path: "learn-docker"  # By default, it'll be the app name itself
+  bucket_path: "learn-docker" # By default, it'll be the app name itself
   on:
     branch: master # you only want to deploy when changes reflect on master
   access_key_id: $AWS_ACCESS_KEY
   secret_access_key: $AWS_SECRET_KEY
-  
