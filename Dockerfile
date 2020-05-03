@@ -6,13 +6,13 @@ FROM node:alpine
 WORKDIR /usr/app
 
 # Copy package.json before copying all files so that we only re-install npm modules if anything changes in package.json
-COPY ./package.json ./
+COPY package.json .
 
 # Install some dependencies
 RUN npm install
 
 # Copy our files to the container as the container isn't aware of your files
-COPY ./ ./
+COPY . .
 
 # Default commands
 CMD ["npm", "start"]
