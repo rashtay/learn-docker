@@ -98,3 +98,24 @@ The other solution is to create a new service in the docker-compose file but unf
 - Check the `Dockerfile` and not the `Dockerfile.dev` for comments
 - Run `docker build -t rahulshetty/react-app .`
 - Run `docker run -p 8080:80 rahulshetty/react-app` to see your app running on nginx
+
+### Travis CI
+
+- Config file `.travis.yml` seems self-explanatory
+- Login to Travis CI and you'd see your build passing or failing tests
+
+### AWS Elastic Bean stalk
+
+- Login.
+- search for Elastic bean stalk
+- Provide a application name
+- Provide a tag name to search the application quickly
+- Choose `Docker` as the platform
+- Let the default options be chosen
+- Choose `Sample Application` under application code
+- Remember, elastic beanstalk grows as the users on our platform increase and if one container cannot handle the traffic which is identified by the AWS load balancer
+- Check `.travis.yml` config for comments about the auto deployment config
+- Services -> IAM -> Users -> Add user. Add name as `learn-docker-travis-ci`. Provide programmaric access only (tick the checkbox). Click `Next Permissions`
+- `Attach Existing Policies Directly` -> Search for ElasticBeanStalk -> Pick AWSElasticBeanStalkFullAccess -> Add tags if you want to -> Next:Review -> Create User
+- Copy the access key and secret key. Download it as you won't get it again.
+- Add the environment variables to travic CI by clicking repo settings on Travis CI and then adding the environemnt variables
