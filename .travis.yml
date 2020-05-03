@@ -1,0 +1,11 @@
+# Anytime we are making use of docker, we need super user permissions
+sudo: required
+language: generic
+services:
+  - docker
+
+before_install:
+  - docker build -f Dockerfile.dev -t rahulshetty/learn-docker .
+
+script:
+  - docker run rahulshetty/learn-docker -e CI=true npm run test
