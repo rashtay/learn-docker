@@ -2,10 +2,13 @@
 version: "3"
 # services are docker containers you would want to run
 services:
-  redis-server:
-    image: "redis"
-  node-app:
-    restart: always
-    build: .
+  web:
+    stdin_open: true
+    build:
+      context: . # root directory of the project
+      dockerfile: Dockerfile.dev
     ports:
-      - "8080:8080"
+      - "3000:3000"
+    volumes:
+      - /app/node_modules # keep using the node_modules inside docker container app
+      - .:/app # current directory to container
