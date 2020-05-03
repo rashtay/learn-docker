@@ -1,0 +1,11 @@
+# version is the version of docker compose
+version: "3"
+# services are docker containers you would want to run
+services:
+  redis-server:
+    image: "redis"
+  node-app:
+    restart: always
+    build: .
+    ports:
+      - "8080:8080"
