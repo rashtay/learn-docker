@@ -5,11 +5,14 @@ FROM node:alpine
 # So, we can specify the root directory to copy our files to the right place
 WORKDIR /usr/app
 
-# Copy our files to the container as the container isn't aware of your files
-COPY ./ ./
+# Copy package.json before copying all files so that we only re-install npm modules if anything changes in package.json
+COPY ./package.json ./
 
 # Install some dependencies
 RUN npm install
+
+# Copy our files to the container as the container isn't aware of your files
+COPY ./ ./
 
 # Default commands
 CMD ["npm", "start"]
