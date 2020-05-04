@@ -1,7 +1,8 @@
 # Production environment
 # Specify a base image. For example, if you wanna run chrome in a PC you need to install the OS which comes prebundled with some of it's  own tools
 # By adding the stage name as builder, we refer to anything after from to be a part of the builder phase
-FROM node:alpine as builder
+# FROM node:alpine as builder  # This command fails during deployment
+FROM node:alpine
 
 # We do not want our files to be scattered in the root directory of the image
 # So, we can specify the root directory to copy our files to the right place
@@ -29,4 +30,5 @@ FROM nginx
 # But ElasticBeanStalk uses picks of this config and runs our application on this port
 EXPOSE 80
 
-COPY --from=builder /app/build /usr/share/nginx/html
+# COPY --from=builder /app/build /usr/share/nginx/html # This command fails as the first line with the stage name is not supported by AWS
+COPY --from=0 /app/build /usr/share/nginx/html
