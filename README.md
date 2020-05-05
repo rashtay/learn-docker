@@ -120,3 +120,9 @@ The other solution is to create a new service in the docker-compose file but unf
 - Copy the access key and secret key. Download it as you won't get it again.
 - Add the environment variables to travic CI by clicking repo settings on Travis CI and then adding the environemnt variables
 - Push the changes
+
+## Multi-container application
+
+---
+
+###
