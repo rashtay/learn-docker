@@ -1,0 +1,11 @@
+{
+  "name": "learn-docker",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "redis": "^3.0.2"
+  },
+  "scripts": {
+    "start": "nodemon"
+  }
+}

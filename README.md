@@ -125,4 +125,7 @@ The other solution is to create a new service in the docker-compose file but unf
 
 ---
 
-###
+### Running 3 containers together
+
+- Look at the docker-compose file. We have added three services we want to run.
+- Use `docker-compose up --build --remove-orphans` to clear the previous orphans

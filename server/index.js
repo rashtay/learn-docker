@@ -12,19 +12,21 @@ const PORT = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
+console.log(keys.pgHost);
+
 const pgClient = new Pool({
   user: keys.pgHost,
   password: keys.pgPassword,
-  database: keys.database,
+  database: keys.pgDatabase,
   host: keys.pgHost,
   port: keys.pgPort,
 });
 
-pgClient.on((err) => console.log("Lost PG connection."));
+pgClient.on("error", (err) => console.log("Lost PG connection."));
 
 pgClient
-  .query("INSERT TABLE IF NOT EXISTS values (number INT)")
-  .catch((err) => console.log("Unsuccessful insert to pg"));
+  .query("CREATE TABLE IF NOT EXISTS values (number INT)")
+  .catch((err) => console.log("Unsuccessful insert to pg", err));
 
 // Redis config
 const redisClient = redis.createClient({
