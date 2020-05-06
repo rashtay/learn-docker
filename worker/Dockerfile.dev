@@ -16,4 +16,4 @@ RUN npm audit fix
 COPY . .
 
 # Default commands
-CMD ["npm", "start"]
+CMD ["npm", "dev"]

@@ -6,7 +6,7 @@ FROM node:alpine
 WORKDIR /app
 
 # Copy package.json before copying all files so that we only re-install npm modules if anything changes in package.json
-COPY package*.json .
+COPY package.json .
 
 # Install dependencies
 RUN npm install
