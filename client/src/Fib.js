@@ -15,18 +15,19 @@ class Fib extends PureComponent {
 
   async fetchValues() {
     const values = await axios.get("/api/values/current");
-    this.setState({ values });
+
+    this.setState({ values: values.data });
   }
 
   async fetchIndexes() {
     const seenIndexes = await axios.get("/api/values/all");
+
     this.setState({ seenIndexes: seenIndexes.data });
   }
 
   handleSubmit = async (evt) => {
-    evt.preventdefault();
-
-    await axios.get("/api/values", {
+    evt.preventDefault();
+    await axios.post("/api/values", {
       index: this.state.index,
     });
 
@@ -34,7 +35,7 @@ class Fib extends PureComponent {
   };
 
   renderSeenIndexes() {
-    return this.state.seenIndexes.map(({ number }) => number).join("");
+    return this.state.seenIndexes.map(({ number }) => number).join(", ");
   }
 
   renderValues() {
@@ -61,7 +62,7 @@ class Fib extends PureComponent {
             onChange={(evt) => this.setState({ index: evt.target.value })}
           />
 
-          <button type="button">Submit</button>
+          <button type="submit">Submit</button>
         </form>
 
         <h3>Indexes I have seen:</h3>

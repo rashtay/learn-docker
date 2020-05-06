@@ -20,5 +20,5 @@ subscription.on("message", (channel, message) => {
   redisClient.hset("values", message, fib(parseInt(message, 10)));
 });
 
-// Subscribe to any insert event happening in redis
+// Subscribe to any "insert" event
 subscription.subscribe("insert");

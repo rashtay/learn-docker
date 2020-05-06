@@ -12,8 +12,6 @@ const PORT = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-console.log(keys.pgHost);
-
 const pgClient = new Pool({
   user: keys.pgHost,
   password: keys.pgPassword,
@@ -43,9 +41,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/values/all", async (req, res) => {
-  const values = await pgClient.query("SELECT* from values");
+  const values = await pgClient.query("SELECT * from values");
 
-  res.send(values);
+  res.send(values.rows);
 });
 
 app.get("/values/current", (req, res) => {

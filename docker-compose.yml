@@ -11,7 +11,9 @@ services:
       - 5432:5432
   redis:
     image: "redis:latest"
-  server:
+  api:
+    depends_on:
+      - postgres
     build:
       context: ./server # root directory of the project
       dockerfile: Dockerfile.dev
@@ -27,15 +29,18 @@ services:
       - PG_PASSWORD=postgres_password
       - PG_PORT=5432
   client:
+    stdin_open: true # Add this else react crashes
     build:
-      context: . # root directory of the project
+      context: ./client # root directory of the project
       dockerfile: Dockerfile.dev
     volumes:
       - /app/node_modules # keep using the node_modules inside docker container app
       - ./client:/app # current directory to container
-  redis:
+  worker:
+    depends_on:
+      - redis
     build:
-      context: . # root directory of the project
+      context: ./worker # root directory of the project
       dockerfile: Dockerfile.dev
     volumes:
       - /app/node_modules # keep using the node_modules inside docker container app
@@ -43,3 +48,10 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+  nginx:
+    restart: always
+    build:
+      context: ./nginx # root directory of the project
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3050:80"
