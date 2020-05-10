@@ -64,7 +64,7 @@ Tired running the commands again and again? Docker compose comes to your rescue.
 
 <br /><br />
 
-## Building a React Project with Docker
+## Building a React Project with Docker (branch: docker-prod)
 
 ---
 
@@ -121,7 +121,7 @@ The other solution is to create a new service in the docker-compose file but unf
 - Add the environment variables to travic CI by clicking repo settings on Travis CI and then adding the environemnt variables
 - Push the changes
 
-## Multi-container application
+## Multi-container application (branch: multi-container-app)
 
 ---
 
@@ -129,3 +129,93 @@ The other solution is to create a new service in the docker-compose file but unf
 
 - Look at the docker-compose file. We have added three services we want to run.
 - Use `docker-compose up --build --remove-orphans` to clear the previous orphans
+
+### Travis CI Config
+
+- Check the Travis CI config file. Quite self explanatory
+- You'd have to add environment variables to Travis CI for logging in to docker.
+- The name for the environment variables would be:
+  - DOCKER_ID for docker username
+  - DOCKER_PASSWORD for docker password
+- You might be confused with `echo "$DOCKER_PASSWORD" | docker login -u "DOCKER_ID" --password-stdin`
+- Well, let's break it down. I echo the password from the environment variable set in Travis CI and then pass it to the login command using stdin.
+
+### AWS Config
+
+- We create a `Dockerrun.aws.json` file as opposed to directly pushing to elastic beanstalk. Where there are multiple docker container elastic bean stalk doesn't know what it's supposed to do. Hence, using the Elastic Container Service (ECS) we'll let the server know we are gonna use multiple docker container.
+- The hostname that you see in the config picks the hostname from the services we run using the docker-compose config. For example, using "client" as hostname is automatically replaced with the actual hostname of the server running the client (react app).
+- The essential property determines the importance of the container. If it's set to true and if the container fails, all the conatiners in the group would fail with the container.
+- We do not need the hostname for nginx as no other container is using the hostname of nginx. In fact, nginx is using the name of other services/container in it's default.conf. Even if you add it's not a problem. But, remember no in is reaching out to `nginx` or `worker`
+- `hostPort` refers to the port to be opened on the machine (in our case aws server) and we map that to the port specified in the container using `containerPort`
+- `containerPort` refers to the port to be opened inside the container residing in the machine
+- `link` property helps in creating the links in the prod server environment. It's easier for us to refer to `client` and `server` containers in our docker configs. But, for ECS to underdstand the link between different project folders, we specify it in the links property.
+- Now, we haven't done any configuration related to Postgres database or redis
+- We handle it using AWS Relational Database Service (RDS) and AWS Elastic Cache. Note, it has got nothing to do with docker. Usually, we should use these services for database or caching
+- Watch the video 156 from the course `Docker and Kubernetes: The Complete Guide` for more details
+
+## AWS Platform Config for deployment
+
+- Headover to https://eu-west-1.console.aws.amazon.com/elasticbeanstalk/home?region=eu-west-1#/gettingStarted
+- Provide the application name
+- Choose Docker
+- And then Multi-container Docker
+- For connecting RDS and AWS Elastic Cache, we need to configure Virtual Private Cloud. By default, you are allotted one.
+- Search for VPC by clicking on services.
+- You'll find a default VPC
+- Now, we also need a security group (firewall). It'll disallow requests from any other domain or you can also allow requests from all domain. By default, a security group will be created for your application. If you searched for VPC, you'd find the security group in the same side menu where VPC label has been placed.
+- Search for RDS in services
+- Create database
+- Choose the database of choice
+- Once you choose postgres, at the bottom fill in the necessary details
+- Store the credentials as you'd need it later on to log in to postgres
+- Click `Next`
+- Select `Create New VPC security group`
+- Add the database name
+- Click `Next`
+- It'll start building it
+- Now, create AWS Elastic Cache (search in services)
+- Click on Redis
+- Click `Create`
+- Choose the cluster engine as redis
+- In Redis settings sections, provide the name and then click on `node type`. Switch to t2.micro as the default one is very expensive. Then choose, `cache.t2.micro`
+- Change `Number of replicas` to 0
+- Next up is the `Advanced Settings` section
+- As `redis group` as the name of the subnet-group
+- Select the default VPC ID
+- Click Create
+- Search for VPC -> Side Menu -> Security -> Security Groups
+- Create security group
+- Provide the name tag
+- Provide the description
+- Select the default VPC
+- Click on Create
+- Select the newly created Security Group
+- Click Inbound
+- Edit
+- Custom TCP Rule
+- Port Range (5432-6379) (Port ranges for postgres and redis)
+- Source - Select the security group created. This would allow any container using the same security group
+- Now, choose Elastic cache from service. Click Redis. Select the database you created. Click Modify. Click `edit` to edit the VPC group. Let the default be selected and select the new security group you have created`
+- Search for RDS. Click Instances. Select your instance. Scroll to details. Note it. Scroll to the top. Click modify -> Network and Security -> Let the default be selected and add the newly created security group -> Continue.
+- Search for Elastic Bean Stalk -> Your docker environment -> Configuration from Side menu -> Instances -> Modify -> EC2 Security Groups -> Your security group -> Save it
+- Search for Elastic Bean Stalk -> Your docker environment -> Configuration from Side menu -> Software -> Modify -> Environment Properties
+  - REDIS_HOST -> The value will be the Elastic Cache redis domain name (Search for elastic cache -> redis -> Click the arrow next to your instance and you'll get the domain name. DO NOT COPY THE PORT NUMBER WITH THE URL)
+  - REDIS_PORT -> Now, you can spcify the port for redis (default 6379)
+  - PG_USER -> Whatever you had set while configuring postgres
+  - PG_PASSWORD -> Whatever you had set while configuring postgres
+  - PG_HOST -> (Services -> RDS -> <Your Db Instance> -> Connect -> Copy the url without the port)
+  - PG_PORT -> 5432
+  - PG_DATABASE -> Name of the database
+- For adding the `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` in travis.yml file, follow the below given steps:
+  - Search for `IAM` in services
+  - Click on `Users` from the sidemenu
+  - Add User
+  - Add a username
+  - Access type - `Programmatic Access`
+  - Next
+  - Attach existing policies
+  - Search for `beanstalk`
+  - Add all the elactic bean stalk options which has a type of `AWS managed`
+  - Next -> Create User
+  - You'll get the access key ID and the secret key
+  - Add the ID and secret key as environment properties in travis CI. Go to your project -> More options -> Settings -> Environment Variables

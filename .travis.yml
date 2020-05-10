@@ -1,23 +1,37 @@
-# # Anytime we are making use of docker, we need super user permissions
-# sudo: required
-# language: generic
-# services:
-#   - docker
+# Anytime we are making use of docker, we need super user permissions
+sudo: required
+language: generic
+services:
+  - docker
 
-# before_install:
-#   - docker build -f Dockerfile.dev -t rahulshetty/learn-docker .
+before_install:
+  - docker build -f Dockerfile.dev -t rahulshetty/learn-docker ./client # We use .dev coz we want to unit test our code before deployment and /build folder will have raw deployment files and not test suites
 
-# script:
-#   - docker run -e CI=true rahulshetty/learn-docker npm run test
+script:
+  - docker run -e CI=true rahulshetty/learn-docker npm run test # run this script to verify all tests are passing. If it fails, Travis CI will stop building and deployment fails. Status code would be 0 if test fails
 
-# deploy:
-#   provider: elasticbeanstalk # whereever you are deploying your app
-#   region: "eu-west-1" # region where you created the elastic bean server. You can get it from the domain name as well
-#   app: "learn-docker" # name of the app you specified while creating the server
-#   env: "LearnDocker-env" # name elastic bean environment. Can be found on the detail page of the running elastic bean instance
-#   bucket_name: "elasticbeanstalk-eu-west-1-163766282102" # Navigate to s3 bucket by clicking services and then searching s3 from the top bar in AWS
-#   bucket_path: "learn-docker" # By default, it'll be the app name itself
-#   on:
-#     branch: master # you only want to deploy when changes reflect on master
-#   access_key_id: $AWS_ACCESS_KEY
-#   secret_access_key: $AWS_SECRET_KEY
+after_success:
+  - docker build -t rahulshetty/multi-client ./client
+  - docker build -t rahulshetty/multi-nginx ./nginx
+  - docker build -t rahulshetty/multi-server ./server
+  - docker build -t rahulshetty/multi-worker ./worker
+  # Log in to docker
+  - echo "$DOCKER_PASSWORD" | docker login -u "DOCKER_ID" --password-stdin
+  # Take these images and push them to docker hub
+  - docker push rahulshetty/multi-client
+  - docker push rahulshetty/multi-nginx
+  - docker push rahulshetty/multi-server
+  - docker push rahulshetty/multi-worker
+
+deploy:
+  edge: true # it's the fix for Missing bucket_name error. You can remove this and check if this error is still persistent
+  provider: elasticbeanstalk # whereever you are deploying your app
+  region: "eu-west-1" # region where you created the elastic bean server. You can get it from the domain name as well
+  app: "learn-docker" # name of the app you specified while creating the server
+  env: "LearnDocker-env" # name elastic bean environment. Can be found on the detail page of the running elastic bean instance
+  bucket_name: "elasticbeanstalk-eu-west-1-163766282102" # Navigate to s3 bucket by clicking services and then searching s3 from the top bar in AWS
+  bucket_path: "learn-docker" # By default, it'll be the app name itself
+  on:
+    branch: master # you only want to deploy when changes reflect on master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
